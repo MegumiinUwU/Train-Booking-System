@@ -1,0 +1,122 @@
+CREATE TABLE Admin (
+    admin_id INT IDENTITY(1,1) PRIMARY KEY ,
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255),
+    name VARCHAR(255),
+    phone VARCHAR(20)
+);
+
+CREATE TABLE Passenger (
+    passenger_id INT IDENTITY(1,1) PRIMARY KEY ,
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255),
+    name VARCHAR(255),
+    phone VARCHAR(20),
+    age INT,
+    gender VARCHAR(10)
+);
+
+CREATE TABLE Train (
+    train_id INT IDENTITY(1,1) PRIMARY KEY ,
+    train_model VARCHAR(255),
+    capacity INT
+);
+
+CREATE TABLE Stations (
+    station_id INT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(255),
+    location VARCHAR(255)
+);
+
+
+CREATE TABLE Seats (
+    train_id INT,
+    seat_number INT IDENTITY(1,1),
+    seat_tier VARCHAR(20),
+    PRIMARY KEY (train_id, seat_number),
+    FOREIGN KEY (train_id) REFERENCES Train(train_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Trip (
+    trip_id INT IDENTITY(1,1) PRIMARY KEY ,
+    departure_time DATETIME,
+    arrival_time DATETIME,
+    num_passengers INT,
+    train_id INT,
+    FOREIGN KEY (train_id) REFERENCES Train(train_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Ticket (
+    ticket_id INT IDENTITY(1,1) PRIMARY KEY ,
+    price NUMERIC(10,2),
+    tier VARCHAR(20),
+    start_station_id INT,
+    end_station_id INT,
+	trip_id INT,
+    FOREIGN KEY (start_station_id) REFERENCES Stations(station_id),
+    FOREIGN KEY (end_station_id) REFERENCES Stations(station_id),
+	FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Trip_Stations (
+    trip_id INT,
+    station_id INT,
+    PRIMARY KEY (trip_id, station_id),
+    FOREIGN KEY (trip_id) REFERENCES Trip(trip_id),
+    FOREIGN KEY (station_id) REFERENCES Stations(station_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Manage (
+    admin_id INT,
+    trip_id INT,
+    train_id INT,
+    PRIMARY KEY (admin_id, trip_id),
+    FOREIGN KEY (admin_id) REFERENCES Admin(admin_id),
+    FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE,
+    FOREIGN KEY (train_id) REFERENCES Train(train_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Buy (
+    passenger_id INT,
+    ticket_id INT,
+    train_id INT,
+    seat_number INT,
+    PRIMARY KEY (passenger_id, ticket_id),
+    FOREIGN KEY (passenger_id) REFERENCES Passenger(passenger_id) ON DELETE CASCADE,
+    FOREIGN KEY (ticket_id) REFERENCES Ticket(ticket_id) ON DELETE CASCADE,
+    FOREIGN KEY (train_id) REFERENCES Train(train_id) ON DELETE CASCADE
+);
+
+
+
+ALTER TABLE Trip DROP COLUMN num_passengers;
+
+-- Create a user-defined function to calculate the number of passengers for each trip
+CREATE FUNCTION dbo.GetNumPassengersForTrip(@trip_id INT)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @num_passengers INT;
+    SELECT @num_passengers = COUNT(*)
+    FROM Ticket
+    WHERE trip_id = @trip_id;
+    RETURN @num_passengers;
+END;
+
+-- Add a computed column to the Trip table to use the user-defined function
+ALTER TABLE Trip
+ADD num_passengers AS dbo.GetNumPassengersForTrip(trip_id);
+
+
+
+
+-- Drop the existing foreign key constraint
+ALTER TABLE Trip_Stations DROP CONSTRAINT FK__Trip_Stat__trip___4BAC3F29;
+
+-- Add the foreign key constraint with ON DELETE CASCADE option
+ALTER TABLE Trip_Stations 
+ADD CONSTRAINT FK__Trip_Stat__trip___4BAC3F29 
+FOREIGN KEY (trip_id) 
+REFERENCES Trip(trip_id) 
+ON DELETE CASCADE;
