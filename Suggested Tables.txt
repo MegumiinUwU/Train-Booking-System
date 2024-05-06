@@ -33,6 +33,7 @@ CREATE TABLE Seats (
     train_id INT,
     seat_number INT IDENTITY(1,1),
     seat_tier VARCHAR(20),
+    is_valid BIT
     PRIMARY KEY (train_id, seat_number),
     FOREIGN KEY (train_id) REFERENCES Train(train_id) ON DELETE CASCADE
 );
@@ -59,13 +60,6 @@ CREATE TABLE Ticket (
 	FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Trip_Stations (
-    trip_id INT,
-    station_id INT,
-    PRIMARY KEY (trip_id, station_id),
-    FOREIGN KEY (trip_id) REFERENCES Trip(trip_id),
-    FOREIGN KEY (station_id) REFERENCES Stations(station_id) ON DELETE CASCADE
-);
 
 CREATE TABLE Manage (
     admin_id INT,
@@ -119,4 +113,14 @@ ALTER TABLE Trip_Stations
 ADD CONSTRAINT FK__Trip_Stat__trip___4BAC3F29 
 FOREIGN KEY (trip_id) 
 REFERENCES Trip(trip_id) 
+ON DELETE CASCADE;
+
+-------------------------
+ALTER TABLE dbo.Manage
+DROP CONSTRAINT FK__Manage__admin_id__14270015;
+
+ALTER TABLE dbo.Manage
+ADD CONSTRAINT FK__Manage__admin_id__14270015
+FOREIGN KEY (admin_id)
+REFERENCES dbo.Admin(admin_id)
 ON DELETE CASCADE;
