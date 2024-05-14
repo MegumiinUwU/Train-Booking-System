@@ -9,7 +9,8 @@ from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, Label
 
 import os
 current_directory = os.getcwd()
-relative_path = "assets/frame0"
+print(current_directory)
+relative_path = "build/assets/frame0"
 
 
 # OUTPUT_PATH = Path(__file__).parent
