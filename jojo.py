@@ -46,7 +46,7 @@ def admin_exists(admin_id):
 
         # Check if admin_id exists in the Admin table
         cursor.execute("SELECT * FROM Admin WHERE admin_id = ?", (admin_id,))
-        exists = cursor.fetchone() is not None
+        exists = cursor.fetchoFne() is not None
 
         return exists
 
@@ -411,12 +411,12 @@ def remove_train(train_id):
         # Commit the transaction
         conn.commit()
 
-        print("Train removed successfully!")
+        return("Train removed successfully!")
 
     except Exception as e:
         # Rollback in case of any error
         conn.rollback()
-        print(f"Error removing train: {str(e)}")
+        return(f"Error removing train: {str(e)}")
 
     finally:
         # Close cursor and connection
@@ -501,7 +501,7 @@ def add_tickets(quantity, price, tier, start_station_id, end_station_id, trip_id
 
 
 
-def remove_ticket(ticket_id):
+def remove_ticket(trip_id , teir):
     try:
         # Establish connection
         conn = odbc.connect(connection_string)
@@ -510,20 +510,20 @@ def remove_ticket(ticket_id):
         cursor = conn.cursor()
 
         # Delete query
-        delete_query = "DELETE FROM Ticket WHERE ticket_id = ?"
+        delete_query = "DELETE FROM Ticket WHERE trip_id = ? AND tier = ?"
 
         # Execute the query with parameters
-        cursor.execute(delete_query, (ticket_id,))
+        cursor.execute(delete_query, (trip_id,teir))
 
         # Commit the transaction
         conn.commit()
 
-        print("Ticket removed successfully!")
+        return("Ticket removed successfully!")
 
     except Exception as e:
         # Rollback in case of any error
         conn.rollback()
-        print(f"Error removing ticket: {str(e)}")
+        return(f"Error removing ticket: {str(e)}")
 
     finally:
         # Close cursor and connection
@@ -812,12 +812,12 @@ def remove_trip(trip_id):
         # Commit the transaction
         conn.commit()
 
-        print("Trip removed successfully!")
+        return("Trip removed successfully!")
 
     except Exception as e:
         # Rollback in case of any error
         conn.rollback()
-        print(f"Error removing trip: {str(e)}")
+        return(f"Error removing trip: {str(e)}")
 
     finally:
         # Close cursor and connection
@@ -1634,4 +1634,5 @@ def get_user_by_email(email):
                 return None
             
         
+
 

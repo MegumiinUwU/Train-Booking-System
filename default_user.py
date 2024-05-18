@@ -640,6 +640,9 @@ class EditTrip(tk.Frame):
         self.layout_widgets()
 
     def create_widgets(self):
+        self.transparent_canvas = Canvas(self, bg="#f0f0f0", height=1080, width=1920, highlightthickness=0)
+        self.transparent_canvas.place(x=0, y=0)
+
         self.canvas = tk.Canvas(
             self,
             bg="#FFFFFF",
@@ -662,6 +665,12 @@ class EditTrip(tk.Frame):
             command=lambda:  self.master.show_add_trip_frame(),
             relief="flat"
         )
+        #####################################
+        self.button_image_1bff = PhotoImage(file=self.relative_to_assets("remove.png"))
+        self.button_1bff = Button(self.canvas, image=self.button_image_1bff, borderwidth=0, highlightthickness=0, command=self.deleteTrip, relief="flat")
+        self.button_1bff.place(x=650.0, y=544.0, width=150.0, height=48.0)
+        #####################################
+
 
         self.button_image_2 = tk.PhotoImage(file=self.relative_to_assets("button_2.png"))
         self.button_2 = tk.Button(
@@ -901,6 +910,24 @@ class EditTrip(tk.Frame):
             self.departure_time_entry.delete(0, tk.END)
             self.arrival_time_entry.delete(0, tk.END)
 
+
+    def deleteTrip(self):
+            trip = self.Select_Trip_combo.get()
+            trip_dict = {}
+            for item in trip.strip('{}').split(', '):
+                if ':' in item:
+                    key, value = item.split(': ')
+                    trip_dict[key.strip("'")] = value.strip("'")
+            trip_id = trip_dict.get('trip_id')
+            if trip_id == None:
+                messagebox.showerror("Error", "Please select a trip to delete")
+                return
+            x = jojo.remove_trip(trip_id)
+            messagebox.showinfo("", x)
+            self.master.show_edit_trip_frame()
+            if x == "Trip deleted successfully!":
+                self.Select_Trip_combo.set('')
+
     def relative_to_assets(self, path: str) -> Path:
         current_directory = os.getcwd()
         relative_path = "All_Assets/Edittrip"
@@ -1000,6 +1027,12 @@ class EditTrain(tk.Frame):
             image=self.entry_image_2
         )
         self.entry_2 = tk.Entry(self, bd=0, bg="#FFFCFC", fg="#000716", font=("Arial", 20), highlightthickness=0)
+
+        #####################################
+        self.button_image_1bff = PhotoImage(file=self.relative_to_assets("remove.png"))
+        self.button_1bff = Button(self.canvas, image=self.button_image_1bff, borderwidth=0, highlightthickness=0, command=self.deleteTrain, relief="flat")
+        self.button_1bff.place(x=650.0, y=544.0, width=150.0, height=48.0)
+        #####################################
 
         self.button_image_2 = tk.PhotoImage(file=self.relative_to_assets("button_2.png"))
         self.button_2 = tk.Button(
@@ -1112,6 +1145,23 @@ class EditTrain(tk.Frame):
             self.Train_combo.set('')
             self.entry_1.delete(0, tk.END)
             self.entry_2.delete(0, tk.END)
+    
+    def deleteTrain(self):
+        train = self.Train_combo.get()
+        train_dict = {}
+        for item in train.strip('{}').split(', '):
+            if ':' in item:
+                key, value = item.split(': ')
+                train_dict[key.strip("'")] = value.strip("'")
+        train_id = train_dict.get('train_id')
+        if train_id==None:
+            messagebox.showerror("Error", "Please select a train to delete")
+            return
+        x = jojo.remove_train(train_id)
+        messagebox.showinfo("", x)
+        self.master.show_edit_train_frame()
+        if x == "Train deleted successfully!":
+            self.Train_combo.set('')
 
     def relative_to_assets(self, path: str) -> Path:
         current_directory = os.getcwd()
@@ -1153,6 +1203,11 @@ class EditTicket(tk.Frame):
             332.0,
             image=self.image_image_1
         )
+        #####################################
+        self.button_image_1bff = PhotoImage(file=self.relative_to_assets("remove.png"))
+        self.button_1bff = Button(self.canvas, image=self.button_image_1bff, borderwidth=0, highlightthickness=0, command=self.deleteTicket, relief="flat")
+        self.button_1bff.place(x=650.0, y=544.0, width=150.0, height=48.0)
+        #####################################
 
         self.button_image_1 = tk.PhotoImage(file=self.relative_to_assets("button_1.png"))
         self.button_1 = tk.Button(
@@ -1352,6 +1407,29 @@ class EditTicket(tk.Frame):
             self.Trip_combo_onichan.set('')
             self.entry_1.delete(0, tk.END)
             self.tier_combo.set('')
+        
+    def deleteTicket(self):
+        trip = self.Trip_combo_onichan.get()
+        trip_dict = {}
+        for item in trip.strip('{}').split(', '):
+            if ':' in item:
+                key, value = item.split(': ')
+                trip_dict[key.strip("'")] = value.strip("'")
+        trip_id = trip_dict.get('trip_id')
+        teir = trip_dict.get('tier')
+
+        
+        
+        if ( trip_id==None):
+            messagebox.showerror("Error", "Please enter trip id to delete tickets")
+            return
+    
+        x = jojo.remove_ticket(trip_id , teir)
+
+        messagebox.showinfo("", x)
+        self.master.show_edit_ticket_frame()
+        if x == "Ticket deleted successfully!":
+            self.Trip_combo_onichan.set('')
 
     def layout_widgets(self):
         self.canvas.place(x=0, y=0)
@@ -2050,5 +2128,8 @@ class Application(tk.Tk):
 if __name__ == "__main__":
     app = Application()
     app.mainloop()
+
+
+
 
 
