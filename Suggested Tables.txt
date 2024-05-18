@@ -37,7 +37,6 @@ CREATE TABLE Seats (
     trip_id INT,
     PRIMARY KEY (train_id, seat_number),
     FOREIGN KEY (train_id) REFERENCES Train(train_id) ON DELETE CASCADE,
-    FOREIGN KEY (trip_id) REFERENCES Trip(trip_id)
 );
 
 CREATE TABLE Trip (
