@@ -1,15 +1,22 @@
-import pypyodbc as odbc
+# import pypyodbc as odbc
 import hashlib
 import re
 import datetime
+import pyodbc as odbc
 
+server = 'YOUSSEF'
+database = 'Train Booking'
+username = 'jojo'
+password = '812200388'
+driver = 'ODBC Driver 17 for SQL Server'  # Assuming you're using Microsoft SQL Server
 
-connection_string = (
-    "Driver={SQL Server};"
-    "Server=NADA\\MSSQLSERVERR;"
-    "Database=TMS;"
-    "Trusted_Connection=yes;"
-)
+connection_string = f"""
+DRIVER={{{driver}}};
+SERVER={server};
+DATABASE={database};
+UID={username};
+PWD={password};
+"""
 
 def seat_number_valid(train_id, seat_number):
     try:
@@ -1387,7 +1394,7 @@ def get_all_users_tickets(email):
     return trip_details
 
 
-import pyodbc as odbc
+
 
 def get_ticket_and_passenger_info(ticket_id, passenger_email):
     try:

@@ -83,18 +83,6 @@ class Menu(tk.Frame):
         abu_dhabi_city_label.place(x=700, y=160)
 
 
-        # Adding label to display time in Cairo
-        cairo_label = Label(self, font='cairo_font', foreground='black',background="#E8B4FF")
-        cairo_label.place(x=400, y=188)  
-
-        # Adding label to display time in London
-        london_label = Label(self, font='cairo_font', foreground='black',background="#E8B4FF")
-        london_label.place(x=100, y=188)  
-
-        # Adding label to display time in Abu Dhabi
-        abu_dhabi_label = Label(self, font='cairo_font', foreground='black',background="#E8B4FF")
-        abu_dhabi_label.place(x=700, y=188)  
-
 
 
         self.time()
@@ -397,6 +385,12 @@ class AddTrip(tk.Frame):
         self.create_widgets()
         self.layout_widgets()
 
+    # TO MAKE THE DATA REFRESH FROM DATA BASE (fixed by super awesome youssef)
+    def refresh(self):
+        self.Start_st['values'] = jojo.get_all_stations()
+        self.end_st['values'] = jojo.get_all_stations()
+        self.Train_combo['values'] = jojo.get_all_trains()
+
     def create_widgets(self):
         self.transparent_canvas = Canvas(self, bg="#f0f0f0", height=1080, width=1920, highlightthickness=0)
         self.transparent_canvas.place(x=0, y=0)
@@ -448,8 +442,8 @@ class AddTrip(tk.Frame):
         self.canvas.create_text(186.0, 333.0, anchor="nw", text="End Station:", fill="#010101", font=("IrishGrover Regular", 30 * -1))
         self.canvas.create_text(186.0, 397.0, anchor="nw", text="Train:", fill="#010101", font=("IrishGrover Regular", 30 * -1))
 
-
-        self.Train_combo = ttk.Combobox(self.canvas, values= jojo.get_all_trains(), state="readonly")
+        Meaw = jojo.get_all_trains()
+        self.Train_combo = ttk.Combobox(self.canvas, values= Meaw, state="readonly")
         self.Train_combo.place(x=400, y=397.0, width=250.0, height=48.0)
 
         self.Start_st = ttk.Combobox(self.canvas, values=jojo.get_all_stations(), state="readonly")
@@ -528,6 +522,11 @@ class AddTicket(tk.Frame):
         self.master = master
         self.create_widgets()
         self.layout_widgets()
+
+    # TO MAKE THE DATA REFRESH FROM DATA BASE (fixed by super awesome youssef)
+    def refresh(self):
+        self.Trip_combo_onichan['values'] = jojo.get_all_trips()
+
 
     def create_widgets(self):
         self.canvas = tk.Canvas(self, bg="#FFFFFF", height=610, width=993, bd=0, highlightthickness=0, relief="ridge")
@@ -639,6 +638,14 @@ class EditTrip(tk.Frame):
         self.create_widgets()
         self.layout_widgets()
 
+    # IAM Awesome
+    def refresh(self):
+        self.Select_Trip_combo ['values'] = jojo.get_all_trips()
+        self.Train_combo['values'] = jojo.get_all_trains()
+        self.Start_st['values'] = jojo.get_all_stations()
+        self.end_st['values'] = jojo.get_all_stations()
+
+
     def create_widgets(self):
         self.transparent_canvas = Canvas(self, bg="#f0f0f0", height=1080, width=1920, highlightthickness=0)
         self.transparent_canvas.place(x=0, y=0)
@@ -668,7 +675,7 @@ class EditTrip(tk.Frame):
         #####################################
         self.button_image_1bff = PhotoImage(file=self.relative_to_assets("remove.png"))
         self.button_1bff = Button(self.canvas, image=self.button_image_1bff, borderwidth=0, highlightthickness=0, command=self.deleteTrip, relief="flat")
-        self.button_1bff.place(x=650.0, y=544.0, width=150.0, height=48.0)
+        self.button_1bff.place(x=650.0, y=544.0, width=141.0, height=44.0)
         #####################################
 
 
@@ -853,6 +860,13 @@ class EditTrip(tk.Frame):
 
   
         new_train = self.Train_combo.get()
+        trains = {}
+        for item in new_train.strip('{}').split(', '):
+            if ':' in item:
+                key, value = item.split(': ')
+                trains[key.strip("'")] = value.strip("'")
+        new_train_id = trains.get('train_id')
+        print(new_train_id)
 
         new_start_station = self.Start_st.get()
         stations = {}
@@ -864,12 +878,13 @@ class EditTrip(tk.Frame):
         print(new_start_id )
 
         new_end_station = self.end_st.get()
+        print(new_end_station)
         stations_e = {}
         for item in new_end_station.strip('{}').split(', '):
             if ':' in item:
                 key, value = item.split(': ')
                 stations_e[key.strip("'")] = value.strip("'")
-        new_end_id = stations.get('station_id')
+        new_end_id = stations_e.get('station_id')
         print(new_end_id)
 
 
@@ -889,7 +904,7 @@ class EditTrip(tk.Frame):
             new_dep = None
 
         if new_train == "":
-            new_train = None
+            new_train_id = None
         
         if new_start_station == "":
             new_start_id = None
@@ -897,7 +912,9 @@ class EditTrip(tk.Frame):
         if new_end_station == "":
             new_end_id = None
 
-        x = jojo.update_trip(trip_id, new_dep, new_arr,new_train , new_start_id, new_end_id)
+        print(new_start_id)
+        print(new_end_id)
+        x = jojo.update_trip(trip_id, new_dep, new_arr,new_train_id , new_start_id, new_end_id)
         messagebox.showinfo("", x)
         self.master.show_edit_trip_frame()
         if x == "Trip edited successfully!":
@@ -940,6 +957,9 @@ class EditTrain(tk.Frame):
         self.master = master
         self.create_widgets()
         self.layout_widgets()
+
+    def refresh(self):
+        self.Train_combo['values'] = jojo.get_all_trains()
 
     def create_widgets(self):
         self.canvas = tk.Canvas(
@@ -1031,7 +1051,7 @@ class EditTrain(tk.Frame):
         #####################################
         self.button_image_1bff = PhotoImage(file=self.relative_to_assets("remove.png"))
         self.button_1bff = Button(self.canvas, image=self.button_image_1bff, borderwidth=0, highlightthickness=0, command=self.deleteTrain, relief="flat")
-        self.button_1bff.place(x=650.0, y=544.0, width=150.0, height=48.0)
+        self.button_1bff.place(x=650.0, y=544.0, width=141.0, height=44.0)
         #####################################
 
         self.button_image_2 = tk.PhotoImage(file=self.relative_to_assets("button_2.png"))
@@ -1177,6 +1197,10 @@ class EditTicket(tk.Frame):
         self.create_widgets()
         self.layout_widgets()
 
+    def refresh(self):
+        self.Trip_combo_onichan['values'] = jojo.get_all_trips()
+
+
     def create_widgets(self):
         self.canvas = tk.Canvas(
             self,
@@ -1206,7 +1230,7 @@ class EditTicket(tk.Frame):
         #####################################
         self.button_image_1bff = PhotoImage(file=self.relative_to_assets("remove.png"))
         self.button_1bff = Button(self.canvas, image=self.button_image_1bff, borderwidth=0, highlightthickness=0, command=self.deleteTicket, relief="flat")
-        self.button_1bff.place(x=650.0, y=544.0, width=150.0, height=48.0)
+        self.button_1bff.place(x=650.0, y=544.0, width=141.0, height=44.0)
         #####################################
 
         self.button_image_1 = tk.PhotoImage(file=self.relative_to_assets("button_1.png"))
@@ -1226,14 +1250,6 @@ class EditTicket(tk.Frame):
             image=self.image_image_2
         )
 
-        self.canvas.create_text(
-            186.0,
-            213.0,
-            anchor="nw",
-            text="Start Station:",
-            fill="#010101",
-            font=("IrishGrover Regular", 30 * -1)
-        )
 
         self.canvas.create_text(
             186.0,
@@ -1244,14 +1260,6 @@ class EditTicket(tk.Frame):
             font=("IrishGrover Regular", 30 * -1)
         )
 
-        self.canvas.create_text(
-            186.0,
-            285.0,
-            anchor="nw",
-            text="End Station:",
-            fill="#010101",
-            font=("IrishGrover Regular", 30 * -1)
-        )
 
         self.canvas.create_text(
             186.0,
@@ -1351,10 +1359,6 @@ class EditTicket(tk.Frame):
 
         self.Trip_combo_onichan = ttk.Combobox(self, values=jojo.get_all_trips(), font=("Arial", 20))
 
-        self.start_Station_Combo = ttk.Combobox(self, values=jojo.get_all_stations(), font=("Arial", 20))
-
-        self.end_Station_Combo = ttk.Combobox(self, values=jojo.get_all_stations(), font=("Arial", 20))
-
         self.tier_combo = ttk.Combobox(self, values=["First Class", "Second Class"], font=("Arial", 20))
 
     def edit_ticket(self):
@@ -1369,21 +1373,6 @@ class EditTicket(tk.Frame):
         price = self.entry_1.get()
         tier = self.tier_combo.get()
 
-        new_start_station = self.start_Station_Combo.get()
-        stations = {}
-        for item in new_start_station.strip('{}').split(', '):
-            if ':' in item:
-                key, value = item.split(': ')
-                stations[key.strip("'")] = value.strip("'")
-        new_start_id = stations.get('station_id')
-
-        new_end_station = self.end_Station_Combo.get()
-        stations_e = {}
-        for item in new_end_station.strip('{}').split(', '):
-            if ':' in item:
-                key, value = item.split(': ')
-                stations_e[key.strip("'")] = value.strip("'")
-        new_end_id = stations.get('station_id')
 
         if price == "":
             price = None
@@ -1391,17 +1380,12 @@ class EditTicket(tk.Frame):
         if tier == "":
             tier = None
 
-        if new_start_station == "":
-            new_start_id = None
-
-        if new_end_station == "":
-            new_end_id = None
         
-        if (not price and not tier and not new_start_id and not new_end_id):
+        if (not price and not tier):
             messagebox.showerror("Error", "Please fill in at least one field")
             return
         
-        x = jojo.update_ticket(trip_id, price, tier , new_start_id, new_end_id)
+        x = jojo.update_ticket(trip_id, price, tier)
         messagebox.showinfo("", x)
         if x == "Ticket edited successfully!":
             self.Trip_combo_onichan.set('')
@@ -1443,8 +1427,6 @@ class EditTicket(tk.Frame):
         self.button_8.place(x=9.0, y=515.0, width=155.0, height=44.0)
         self.entry_1.place(x=269.0, y=406.0, width=250.0, height=47.0)
         self.Trip_combo_onichan.place(x=260, y=155.0, width=250.0, height=47.0)
-        self.start_Station_Combo.place(x=360, y=213.0, width=250.0, height=47.0)
-        self.end_Station_Combo.place(x=360, y=285.0, width=250.0, height=47.0)
         self.tier_combo.place(x=322.0, y=343.0, width=250.0, height=47.0)
 
     def relative_to_assets(self, path: str) -> Path:
@@ -1507,7 +1489,7 @@ class LogInFrameUser(tk.Frame):
         x = jojo.login("passenger",email, password)
         messagebox.showinfo("", x)
         if x == "Login successful!":
-          self.master.show_inventory_frame(email)
+          self.master.show_inventory_frame()
           self.entry_1.delete(0, tk.END)
           self.entry_2.delete(0, tk.END)
         
@@ -1604,15 +1586,15 @@ class Inventory(tk.Frame):
     def __init__(self, master, email=None):
         super().__init__(master, bg="#FFFFFF")
         self.master = master
-        self.email = email
         self.create_widgets()
         self.layout_widgets()
 
-    
+    def refresh(self):
+        self.reload_inventory_frame()
 
     def create_widgets(self):
-        self.transparent_canvas = Canvas(self, bg="#f0f0f0", height=1080, width=1920, highlightthickness=0)
-        self.transparent_canvas.place(x=0, y=0)
+        # self.transparent_canvas = Canvas(self, bg="#f0f0f0", height=1080, width=1920, highlightthickness=0)
+        # self.transparent_canvas.place(x=0, y=0)
 
         
         self.canvas = tk.Canvas(self, bg="#FFFFFF", height=610, width=993, bd=0, highlightthickness=0, relief="ridge")
@@ -1624,17 +1606,17 @@ class Inventory(tk.Frame):
 
         self.image_image_1 = PhotoImage(file=relative_to_assets("Iimage_1.png"))
 
-        self.image_image_2 = PhotoImage(file=relative_to_assets("Iimage_2.png"))
+        # self.image_image_2 = PhotoImage(file=relative_to_assets("Iimage_2.png"))
         
 
         self.button_image_4 = PhotoImage(file=relative_to_assets("Ibutton_4.png"))#trip
         self.button_4 = Button(self, image=self.button_image_4, borderwidth=0, highlightthickness=0, relief="flat",command=self.master.show_BookTrip_frame)
 
         self.image_image_2 = PhotoImage(file=relative_to_assets("Iimage_2.png"))
-        self.image_2 = self.canvas.create_image(496.0, 27.0, image=self.image_image_2)
+        # self.image_2 = self.canvas.create_image(496.0, 27.0, image=self.image_image_2)
 
-        self.image_image_1bf = PhotoImage(file=relative_to_assets("image_1bf.png"))
-        self.image_1bf = self.canvas.create_image(582.0,332.0,image=self.image_image_1bf)
+        # self.image_image_1bf = PhotoImage(file=relative_to_assets("image_1bf.png"))
+        # self.image_1bf = self.canvas.create_image(582.0,332.0,image=self.image_image_1bf)
 
         self.image_image_2bf = PhotoImage(file=relative_to_assets("image_2bf.png"))
         self.image_2bf = self.canvas.create_image(496.0,27.0,image=self.image_image_2bf)
@@ -1648,7 +1630,13 @@ class Inventory(tk.Frame):
 
 
 
-        
+        self.transparent_canvas = Canvas(
+            self,
+            bg="white",  # Adjust as needed
+            bd=0,
+            highlightthickness=0,
+            relief="ridge"
+        )
         self.scrollbar = Scrollbar(self.transparent_canvas, orient="vertical", command=self.transparent_canvas.yview)
         self.transparent_canvas.configure(yscrollcommand=self.scrollbar.set)
         self.frame = Frame(self.transparent_canvas, bg="white")
@@ -1679,7 +1667,7 @@ class Inventory(tk.Frame):
 
         self.button_5.place(x=6.0, y=90.0, width=158.0, height=44.0)
         
-        trips = jojo.get_all_users_tickets(self.email)
+        trips = jojo.get_all_users_tickets(ggemail)
 
         for trip_detail in trips:
             trip_string = ""
@@ -1692,19 +1680,24 @@ class Inventory(tk.Frame):
         self.transparent_canvas.place(x=277, y=101, width=500, height=500)
         self.scrollbar.pack(side="right", fill="y")
         self.transparent_canvas.create_window((0, 0), window=self.frame, anchor="nw")
-        
+        print(trips)
+        print(ggemail)
      
 
         # buy_button.place(x=300)  # Place the "Buy" button at x=430
         self.frame.update_idletasks()
         self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+        # self.refresh()
+
     def reload_inventory_frame(self):
         # Clear the current content of the frame
         for widget in self.frame.winfo_children():
             widget.destroy()
 
         # Get updated trips data
-        trips = jojo.get_all_users_tickets(self.email)
+        trips = jojo.get_all_users_tickets(ggemail)
+        print(trips)
+        print(ggemail)
 
         # Add updated trip details to the frame
         for trip_detail in trips:
@@ -1719,11 +1712,12 @@ class Inventory(tk.Frame):
         self.frame.update_idletasks()
         self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
 
-
     def refund_and_update(self, trip_detail):
-        jojo.remove_purchase2(trip_detail.get('ticket_id', ''), self.email)
+        jojo.remove_purchase2(trip_detail.get('ticket_id', ''), ggemail)
         self.reload_inventory_frame()
-       
+
+
+
 
 class BookTrip(tk.Frame):
     def __init__(self, master):
@@ -1731,6 +1725,36 @@ class BookTrip(tk.Frame):
         self.master = master
         self.create_widgets()
         self.layout_widgets()
+
+    def refresh(self):
+        # Clear existing widgets in the frame
+        for widget in self.frame.winfo_children():
+            widget.destroy()
+
+        # Fetch the updated trips
+        trips = jojo.get_all_trips()
+
+        for trip_detail in trips:
+            trip_id = trip_detail['trip_id']
+            trip_string = ""
+            for key, value in trip_detail.items():
+                if key == 'tier' and value is None:
+                    value = "Default"
+                trip_string += f"{key}: {value}\n"
+            Label(self.frame, text=trip_string).pack(anchor="w", pady=5)
+
+            seat_label = Label(self.frame, text="Seat Number:")
+            seat_label.pack(anchor="w", pady=5)
+
+            seat_entry = Entry(self.frame)
+            seat_entry.pack(anchor="w", pady=5)
+
+            buy_button = Button(self.frame, text="Buy Ticket", command=lambda ti=trip_id, se=seat_entry: self.buy_ticket(ti, se))
+            buy_button.pack(anchor="w", pady=5)
+        
+        self.frame.update_idletasks()
+        self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+
 
     def create_widgets(self):
         global ggemail
@@ -1741,16 +1765,16 @@ class BookTrip(tk.Frame):
 
         self.image_image_1 = PhotoImage(file=relative_to_assets("Iimage_1.png"))
 
-        self.image_image_2 = PhotoImage(file=relative_to_assets("Iimage_2.png"))
+        # self.image_image_2 = PhotoImage(file=relative_to_assets("Iimage_2.png"))
 
         self.button_image_4 = PhotoImage(file=relative_to_assets("BKbutton_5.png"))
         self.button_4 = Button(self, image=self.button_image_4, borderwidth=0, highlightthickness=0, relief="flat")
 
         self.image_image_2 = PhotoImage(file=relative_to_assets("Iimage_2.png"))
-        self.image_2 = self.canvas.create_image(496.0, 27.0, image=self.image_image_2)
+        # self.image_2 = self.canvas.create_image(496.0, 27.0, image=self.image_image_2)
 
         self.button_image_5 = PhotoImage(file=relative_to_assets("BKbutton_1.png")) #inventory
-        self.button_5 = Button(self, image=self.button_image_5, borderwidth=0, highlightthickness=0, relief="flat", command=lambda: self.master.show_inventory_frame(ggemail))
+        self.button_5 = Button(self, image=self.button_image_5, borderwidth=0, highlightthickness=0, relief="flat", command=lambda: self.master.show_inventory_frame())
 
         self.transparent_canvas = Canvas(
             self,
@@ -1786,36 +1810,39 @@ class BookTrip(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
         self.transparent_canvas.create_window((0, 0), window=self.frame, anchor="nw")
         
-        for trip_detail in trips:
-            trip_id = trip_detail['trip_id']
-            trip_string = ""
-            for key, value in trip_detail.items():
-                if key == 'tier':
-                    if value == None:
-                      value = "Default"
-                trip_string += f"{key}: {value}\n"
-            Label(self.frame, text=trip_string).pack(anchor="w", pady=5)
-            # Create entry for seat number input
-            # Label for seat number
-            seat_label = Label(self.frame, text="Seat Number:")
-            seat_label.pack(anchor="w", pady=5)
+        # for trip_detail in trips:
+        #     trip_id = trip_detail['trip_id']
+        #     trip_string = ""
+        #     for key, value in trip_detail.items():
+        #         if key == 'tier':
+        #             if value == None:
+        #               value = "Default"
+        #         trip_string += f"{key}: {value}\n"
+        #     Label(self.frame, text=trip_string).pack(anchor="w", pady=5)
+        #     # Create entry for seat number input
+        #     # Label for seat number
+        #     seat_label = Label(self.frame, text="Seat Number:")
+        #     seat_label.pack(anchor="w", pady=5)
 
-            # Entry field for seat number
-            seat_entry = Entry(self.frame)
-            seat_entry.pack(anchor="w", pady=5)
-            # Create button to buy ticket with lambda function to pass trip_id and seat_number
-            buy_button = Button(self.frame, text="Buy Ticket", command=lambda ti=trip_id, seat_entry=seat_entry: self.buy_ticket(ti, seat_entry))
-            buy_button.pack(anchor="w", pady=5)
+        #     # Entry field for seat number
+        #     seat_entry = Entry(self.frame)
+        #     seat_entry.pack(anchor="w", pady=5)
+        #     # Create button to buy ticket with lambda function to pass trip_id and seat_number
+        #     buy_button = Button(self.frame, text="Buy Ticket", command=lambda ti=trip_id, seat_entry=seat_entry: self.buy_ticket(ti, seat_entry))
+        #     buy_button.pack(anchor="w", pady=5)
             
-        self.frame.update_idletasks()
-        self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
-    def buy_ticket(self, trip_id, seat_entry):
+        # self.frame.update_idletasks()
+        # self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+        self.refresh()
+    def buy_ticket(self, trip_id, se):
         # Retrieve seat number input from entry widget
-        seat_number = seat_entry.get()
+        seat_number = se.get()
         if not seat_number:
             messagebox.showerror("", "Please enter a seat number.")
             return
-
+        print(trip_id)
+        print(seat_number)
+        print(ggemail)
         # Call the add_purchase2 function with trip_id, ggemail, and seat_number
         x = jojo.add_purchase2(trip_id, ggemail, seat_number)
         # make notification that the ticket has been bought
@@ -1963,7 +1990,7 @@ class Profile(tk.Frame):
             435.0,
             442.0,
             anchor="nw",
-            text="Date of Birth",
+            text="Age",
             fill="#000000",
             font=("IrishGrover Regular", 30 * -1)
         )
@@ -2015,12 +2042,15 @@ class Profile(tk.Frame):
         gender = self.gender_combo.get()
         res = self.get_user_data()
         type = res[0]
-        x =jojo.edit_user_details(type ,ggemail, email, password, confirm_password, name, phone , age , gender)
+        if type == 'admin':
+            x =jojo.edit_user_details(type ,ggemail, email, password, confirm_password, name, phone , None , None)
+        else:
+            x =jojo.edit_user_details(type ,ggemail, email, password, confirm_password, name, phone , age , gender)
         messagebox.showinfo("", x)
         if type == 'admin':
             self.master.show_add_trip_frame()
         else:
-            self.master.show_inventory_frame(email)
+            self.master.show_inventory_frame()
 
 
 class Application(tk.Tk):
@@ -2066,13 +2096,14 @@ class Application(tk.Tk):
         self.hide_all_frames()
         self.login_frame.pack(fill="both", expand=True)
 
-    def show_inventory_frame(self, email):
+    def show_inventory_frame(self):
         self.hide_all_frames()
-        self.inventory_frame = Inventory(self, email)
+        self.inventory_frame.refresh()
         self.inventory_frame.pack(fill="both", expand=True)
 
     def show_BookTrip_frame(self):
         self.hide_all_frames()
+        self.BookTrip_frame.refresh()
         self.BookTrip_frame.pack(fill="both", expand=True)
 
     def show_sign_up_admin_frame(self):
@@ -2085,7 +2116,7 @@ class Application(tk.Tk):
 
     def show_add_trip_frame(self):
         self.hide_all_frames()
-        
+        self.add_trip_frame.refresh()
         self.add_trip_frame.pack(fill="both", expand=True)
 
     def show_add_train_frame(self):
@@ -2094,22 +2125,26 @@ class Application(tk.Tk):
 
     def show_add_ticket_frame(self):
         self.hide_all_frames()
+        self.add_ticket_frame.refresh()
         self.add_ticket_frame.pack(fill="both", expand=True)
 
     def show_edit_trip_frame(self):
         self.hide_all_frames()
+        self.edit_trip_frame.refresh()
         self.edit_trip_frame.create_widgets()
         self.edit_trip_frame.layout_widgets()
         self.edit_trip_frame.pack(fill="both", expand=True)
 
     def show_edit_train_frame(self):
         self.hide_all_frames()
+        self.edit_train_frame.refresh()
         self.edit_train_frame.create_widgets()
         self.edit_train_frame.layout_widgets()
         self.edit_train_frame.pack(fill="both", expand=True)
 
     def show_edit_ticket_frame(self):
         self.hide_all_frames()
+        self.edit_ticket_frame.refresh()
         self.edit_ticket_frame.create_widgets()
         self.edit_ticket_frame.layout_widgets()
         self.edit_ticket_frame.pack(fill="both", expand=True)
