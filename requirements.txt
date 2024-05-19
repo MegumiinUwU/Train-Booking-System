@@ -1,0 +1,4 @@
+pyodbc
+numpy
+matplotlib
+tkcalendar

@@ -52,6 +52,10 @@ class Menu(tk.Frame):
         self.button_2 = tk.Button(self, image=self.button_image_2, borderwidth=0, highlightthickness=0, relief="flat" , command=lambda: self.master.show_sign_up_admin_frame())
         self.button_2.place(x=601.0, y=400.0, width=271.0, height=67.0)
 
+        self.button_image_3 = tk.PhotoImage(file=relative_to_assets("REPbutton_3.png"))
+        self.button_3 = tk.Button(self, image=self.button_image_3, borderwidth=0, highlightthickness=0, relief="flat" , command=lambda: self.master.show_reports_frame())
+        self.button_3.place(x=330.0, y=510.0, width=271.0, height=67.0)
+
         self.image_image_3 = tk.PhotoImage(file=relative_to_assets("image_3.png"))
         self.image_3 = self.canvas.create_image(505.0, 102.0, image=self.image_image_3)
 
@@ -610,7 +614,7 @@ class AddTicket(tk.Frame):
         quantity = self.entry_1.get()
         tier = self.tier_combo.get()
 
-        
+
 
         if not all([trip, price, quantity, tier]):
             messagebox.showerror("Error", "Please fill in all fields")
@@ -619,6 +623,8 @@ class AddTicket(tk.Frame):
         x = jojo.add_tickets(quantity, price, tier, start_station, end_station, trip_id)
         
         messagebox.showinfo("", x)
+
+        jojo.add_manage(ggemail, trip_id)
         if x == "Ticket added successfully!":
             self.Trip_combo_onichan.set('')
 
@@ -2052,6 +2058,163 @@ class Profile(tk.Frame):
         else:
             self.master.show_inventory_frame()
 
+class Reports(tk.Frame):
+    def __init__(self, master, email=None):
+        super().__init__(master, bg="#FFFFFF")
+        self.master = master
+        self.create_widgets()
+        self.layout_widgets()
+
+    def refresh(self):
+        pass
+
+    def create_widgets(self):
+        self.canvas = tk.Canvas(self, bg="#FFFFFF", height=610, width=993, bd=0, highlightthickness=0, relief="ridge")
+        
+        self.image_image_1 = PhotoImage(
+                file=relative_to_assets("REPORTimage_1.png"))
+        self.image_1 = self.canvas.create_image(
+            582.0,
+            329.0,
+            image=self.image_image_1
+        )
+        self.canvas.create_rectangle(
+            0.0,
+            55.0,
+            195.0,
+            610.0,
+            fill="#474747",
+            outline="")
+        self.image_image_2 = PhotoImage(
+            file=relative_to_assets("REPORTimage_2.png"))
+        self.image_2 = self.canvas.create_image(
+                496.0,
+                27.0,
+                image=self.image_image_2
+            )
+        self.button_image_1 = PhotoImage(file=relative_to_assets("REPORTbutton_1.png"))
+        self.button_1 = Button(self, image=self.button_image_1, borderwidth=0, highlightthickness=0, command=self.master.show_menu_frame, relief="flat")
+
+        self.button_image_2 = PhotoImage(file=relative_to_assets("REPORTbutton_2.png"))
+        self.button_2 = Button(self,image=self.button_image_2,borderwidth=0,highlightthickness=0,command=self.show_trip_profits,relief="flat")
+
+        
+        self.button_image_3 = PhotoImage(file=relative_to_assets("REPORTbutton_3.png"))
+        self.button_3 = Button(self,image=self.button_image_3,borderwidth=0,highlightthickness=0,command=self.show_trips_per_month,relief="flat")
+
+        self.button_image_4 = PhotoImage(file=relative_to_assets("REPORTbutton_4.png"))
+        self.button_4 = Button(self, image=self.button_image_4, borderwidth=0, highlightthickness=0, relief="flat", command=self.show_seats_taken_percentage)
+        
+        self.transparent_canvas = Canvas(
+            self,
+            bg="white",
+            bd=0,
+            highlightthickness=0,
+            relief="ridge"
+        )
+        self.scrollbar = Scrollbar(self.transparent_canvas, orient="vertical", command=self.transparent_canvas.yview)
+        self.transparent_canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.frame = Frame(self.transparent_canvas, bg="white")
+
+    def layout_widgets(self):
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.button_1.place(x=9.0,y=515.0,width=163.0,height=44.0)
+        self.button_2.place(x=9.0, y=69.0,width=175.0,height=44.0)
+        self.button_3.place(
+                x=9.0,
+                y=195.0,
+                width=176.0,
+                height=44.0
+            )
+        
+
+        self.canvas.create_rectangle(0.0, 55.0, 172.0, 610.0, fill="#474747", outline="")
+        self.button_4.place(
+                x=10.0,
+                y=330.0,
+                width=175.0,
+                height=44.0
+            )
+        
+
+        self.transparent_canvas.place(x=277, y=101, width=500, height=500)
+        self.scrollbar.pack(side="right", fill="y")
+        self.transparent_canvas.create_window((0, 0), window=self.frame, anchor="nw")
+
+        self.frame.update_idletasks()
+        self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+
+    def show_trip_profits(self):
+        # Clear the current content of the frame
+        for widget in self.frame.winfo_children():
+            widget.destroy()
+
+        # Get total profit data
+        profit_data = jojo.get_total_profit_per_trip()
+
+        # Add trip profits details to the frame
+        if profit_data:
+            for data in profit_data:
+                trip_string = f"Trip {data['trip_id']}: {data['total_profit']}\n"
+                Label(self.frame, text=trip_string).pack(anchor="w", pady=5)
+
+            # Plot the total profits per trip
+            jojo.plot_total_profit_per_trip(profit_data)
+
+        # Update scrollbar and canvas size
+        self.frame.update_idletasks()
+        self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+
+    def show_trips_per_month(self):
+        # Clear the current content of the frame
+        for widget in self.frame.winfo_children():
+            widget.destroy()
+
+        # Get trips per month data
+        trips_per_month_data = jojo.get_trip_count_per_month()
+
+        # Add trips per month details to the frame
+        if trips_per_month_data:
+            for data in trips_per_month_data:
+                month_year_string = f"{data['month_number']}-{data['year_number']}: {data['trip_count']} trips\n"
+                Label(self.frame, text=month_year_string).pack(anchor="w", pady=5)
+
+            # Plot the trips per month
+            jojo.plot_trip_count_per_month(trips_per_month_data)
+
+        self.frame.update_idletasks()
+        self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+
+    def show_seats_taken_percentage(self):
+        # Clear the current content of the frame
+        for widget in self.frame.winfo_children():
+            widget.destroy()
+
+        # Get seats taken percentage data
+        seats_taken_percentage_data = jojo.get_seats_taken_percentage()
+
+        # Add seats taken percentage details to the frame
+        if seats_taken_percentage_data:
+            for data in seats_taken_percentage_data:
+                trip_string = f"Trip {data['trip_id']}: {data['seats_taken_percentage']}%\n"
+                Label(self.frame, text=trip_string).pack(anchor="w", pady=5)
+
+            # Plot the seats taken percentage
+            jojo.plot_seats_taken_percentage(seats_taken_percentage_data)
+
+        self.frame.update_idletasks()
+        self.transparent_canvas.config(scrollregion=self.transparent_canvas.bbox("all"))
+
+
+
+
+
+
+
+
+
+
+
 
 class Application(tk.Tk):
     def __init__(self):
@@ -2075,6 +2238,7 @@ class Application(tk.Tk):
         self.sign_up_frame = SignUpFrameUser(self)
         self.sign_up_admin_frame = SignUpFrameAdmin(self)
         self.menu_frame = Menu(self)
+        self.reports_frame = Reports(self)
         
         self.hide_all_frames()
        # self.add_train_frame.pack(fill="both", expand=True)
@@ -2153,8 +2317,13 @@ class Application(tk.Tk):
         self.hide_all_frames()
         self.menu_frame.pack(fill="both", expand=True)
 
+    def show_reports_frame(self):
+        self.hide_all_frames()
+        # self.reports_frame.refresh()
+        self.reports_frame.pack(fill="both", expand=True)
+
     def hide_all_frames(self):
-        for frame in [self.menu_frame, self.sign_up_frame, self.login_frame, self.inventory_frame, self.BookTrip_frame, self.profile_frame , self.sign_up_admin_frame, self.login_admin_frame, self.add_train_frame, self.add_ticket_frame, self.edit_trip_frame, self.edit_train_frame, self.edit_ticket_frame, self.add_trip_frame]:
+        for frame in [self.menu_frame, self.sign_up_frame, self.login_frame, self.inventory_frame, self.BookTrip_frame, self.profile_frame , self.sign_up_admin_frame, self.login_admin_frame, self.add_train_frame, self.add_ticket_frame, self.edit_trip_frame, self.edit_train_frame, self.edit_ticket_frame, self.add_trip_frame, self.reports_frame]:
             frame.pack_forget()
 
 

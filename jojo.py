@@ -3,6 +3,8 @@ import hashlib
 import re
 import datetime
 import pyodbc as odbc
+import numpy as np
+import matplotlib.pyplot as plt
 
 server = 'YOUSSEF'
 database = 'Train Booking'
@@ -1641,5 +1643,213 @@ def get_user_by_email(email):
                 return None
             
         
+
+
+def get_total_profit_per_trip():
+    cursor = None
+    conn = None
+    try:
+        # Establish connection
+        conn = odbc.connect(connection_string)
+
+        # Create a cursor object
+        cursor = conn.cursor()
+
+        # Define the query to calculate total profit for each trip
+        total_profit_query = """
+        SELECT 
+            t.trip_id,
+            COALESCE(SUM(ti.price), 0) AS total_profit
+        FROM 
+            Trip t
+            LEFT JOIN Ticket ti ON t.trip_id = ti.trip_id AND ti.is_valid = 0
+        GROUP BY 
+            t.trip_id;
+        """
+
+        # Execute the query
+        cursor.execute(total_profit_query)
+        
+        # Fetch all results
+        results = cursor.fetchall()
+
+        # Format the results as a list of dictionaries
+        profit_data = [{'trip_id': row[0], 'total_profit': row[1]} for row in results]
+
+        return profit_data
+
+    except Exception as e:
+        print(f"Error retrieving total profit data: {str(e)}")
+        return None
+
+    finally:
+        # Close cursor and connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def plot_total_profit_per_trip(profit_data):
+    # Extract trip ids and total profits from the data
+    trip_ids = [data['trip_id'] for data in profit_data]
+    total_profits = [data['total_profit'] for data in profit_data]
+
+    # Convert to numpy arrays for better handling with matplotlib
+    trip_ids_np = np.array(trip_ids)
+    total_profits_np = np.array(total_profits)
+
+    # Create labels for the x-axis
+    x_labels = [f"Trip {trip_id}" for trip_id in trip_ids_np]
+
+    # Create the bar graph
+    plt.figure(figsize=(10, 6))
+    plt.bar(x_labels, total_profits_np, color='blue')
+
+    # Add labels and title
+    plt.xlabel('Trip ID')
+    plt.ylabel('Total Profit')
+    plt.title('Total Profit per Trip')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Show the plot
+    plt.show()
+
+
+def get_trip_count_per_month():
+    cursor = None
+    conn = None
+    try:
+        conn = odbc.connect(connection_string)
+        cursor = conn.cursor()
+        query = """
+        SELECT 
+            MONTH(departure_time) AS month_number,
+            YEAR(departure_time) AS year_number,
+            COUNT(trip_id) AS trip_count
+        FROM 
+            Trip
+        GROUP BY 
+            MONTH(departure_time), YEAR(departure_time)
+        ORDER BY 
+            YEAR(departure_time), MONTH(departure_time);
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return [{'month_number': row[0], 'year_number': row[1], 'trip_count': row[2]} for row in results]
+    except Exception as e:
+        print(f"Error retrieving trip count per month: {str(e)}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def plot_trip_count_per_month(trip_counts):
+    if not trip_counts:
+        print("No data to plot.")
+        return
+
+    months = [f"{row['year_number']}-{row['month_number']}" for row in trip_counts]
+    trip_counts_values = [row['trip_count'] for row in trip_counts]
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(months, trip_counts_values, color='skyblue')
+    plt.xlabel('Month')
+    plt.ylabel('Trip Count')
+    plt.title('Trip Count per Month')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
+
+def get_seats_taken_percentage():
+    cursor = None
+    conn = None
+    try:
+        conn = odbc.connect(connection_string)
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                t.trip_id,
+                (CAST(COUNT(s.seat_number) AS FLOAT) / tr.capacity) * 100 AS seats_taken_percentage
+            FROM 
+                Trip t
+                INNER JOIN Seats s ON t.train_id = s.train_id
+                INNER JOIN Train tr ON t.train_id = tr.train_id
+            WHERE 
+                s.is_valid = 0
+            GROUP BY 
+                t.trip_id, tr.capacity;
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return [{'trip_id': row[0], 'seats_taken_percentage': row[1]} for row in results]
+    except Exception as e:
+        print(f"Error retrieving seats taken percentage: {str(e)}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def plot_seats_taken_percentage(data):
+    if not data:
+        print("No data to plot.")
+        return
+
+    num_trips = len(data)
+    num_cols = min(num_trips, 3)  # Set the number of columns for subplots, maximum 3
+    num_rows = (num_trips + num_cols - 1) // num_cols  # Calculate the number of rows
+
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 5*num_rows))
+    axs = np.array(axs).flatten()   # Flatten the subplot array for easier iteration
+
+    for i, entry in enumerate(data):
+        trip_id = entry['trip_id']
+        percentage = entry['seats_taken_percentage']
+        ax = axs[i]
+
+        ax.pie([percentage, 100 - percentage], labels=['Taken', 'Available'], autopct='%1.1f%%', startangle=140)
+        ax.set_title(f'Seats Taken Percentage for Trip {trip_id}')
+        ax.axis('equal')
+
+    # Hide empty subplots
+    for i in range(num_trips, num_cols * num_rows):
+        axs[i].axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def add_manage(email , trip_id):
+     # Establish connection
+        conn = odbc.connect(connection_string)
+
+        # Create a cursor object
+        cursor = conn.cursor()
+
+        select_query = "SELECT admin_id FROM Admin WHERE email = ?"
+        cursor.execute(select_query, (email,))
+
+        row = cursor.fetchone()
+        admin_id = row[0]
+
+        select_query = "SELECT train_id FROM Trip WHERE trip_id = ?"
+        cursor.execute(select_query, (trip_id,))
+
+        row = cursor.fetchone()
+        train_id = row[0]
+
+        insert_query = "INSERT INTO Manage (admin_id, trip_id, train_id) VALUES (?, ?, ?)"
+        cursor.execute(insert_query, (admin_id, trip_id, train_id))
+
+        conn.commit()
+
+        return
+
+
+
 
 
