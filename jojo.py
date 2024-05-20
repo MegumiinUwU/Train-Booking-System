@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 server = 'YOUSSEF'
 database = 'Train Booking'
-username = 'jojo'
-password = '812200388'
+username = ''
+password = ''
 driver = 'ODBC Driver 17 for SQL Server'  # Assuming you're using Microsoft SQL Server
 
 connection_string = f"""
