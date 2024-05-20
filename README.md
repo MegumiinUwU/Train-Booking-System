@@ -90,7 +90,7 @@ The database schema for the train system consists of several tables, each servin
 
 These tables and relationships form the backbone of the train system database, enabling efficient management of train schedules, ticketing, and passenger information.
 
-<iframe src="README images and gifs/ERD.pdf" width="600px" height="500px"></iframe>
+[Find the ERD here](<README images and gifs/ERD.pdf>)
 
 Check the SQL code directory for more about the implementation, defined views, and functions
 
